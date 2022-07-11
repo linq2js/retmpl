@@ -2,6 +2,7 @@ import {
   createElement,
   FC,
   Fragment,
+  PropsWithChildren,
   ReactElement,
   useCallback,
   useMemo,
@@ -156,4 +157,130 @@ export const createTemplateBuilder = <T>(
 
     return createComponentsFromTemplate(rootWrapper, {}, definitions, template);
   };
+};
+
+export type ShapeProps = {
+  className?: string;
+  /**
+   * left
+   */
+  l?: number | string;
+  /**
+   * top
+   */
+  t?: number | string;
+  /**
+   * right
+   */
+  r?: number | string;
+  /**
+   * bottom
+   */
+  b?: number | string;
+  /**
+   * width
+   */
+  w?: number | string;
+  /**
+   * height
+   */
+  h?: number | string;
+  gap?: number | string;
+  /**
+   * backgroundColor
+   */
+  color?: string;
+  absolute?: boolean;
+  /**
+   * row = true, reverse = true => flexDirection: row-reverse
+   * col = true, reverse = true => flexDirection: col-reverse
+   */
+  reverse?: boolean;
+  /**
+   * borderRadius. rouned = true => full border radius (9999px)
+   */
+  rounded?: boolean | number | string;
+  /**
+   * flexDirection: row
+   */
+  row?: boolean;
+  /**
+   * flexDirection: column
+   */
+  col?: boolean;
+  flex?: string | number;
+  /**
+   * justifyContent
+   */
+  justify?: "start" | "end" | "center" | "between" | "around" | "evenly";
+  justifyItems?: "start" | "end" | "center" | "stretch";
+  justifySelf?: "start" | "end" | "center" | "stretch";
+  /**
+   * alignItems
+   */
+  items?: "start" | "end" | "center" | "baseline" | "stretch";
+  /**
+   * alignContent
+   */
+  content?: "start" | "end" | "center" | "between" | "around" | "evenly";
+  /**
+   * alignSelf
+   */
+  self?: "start" | "end" | "center" | "between" | "around" | "evenly";
+};
+
+export const createShapeTemplate = (
+  defaultProps?: Partial<ShapeProps>,
+  type: any = "div"
+) => {
+  return Object.assign(
+    (props: PropsWithChildren<ShapeProps>) => {
+      const elementProps = {
+        children: props.children,
+        style: {
+          flex: props.flex,
+          display: props.flex || props.row || props.col ? "flex" : undefined,
+          width: props.w,
+          height: props.h,
+          flexDirection: props.row
+            ? props.reverse
+              ? "row-reverse"
+              : "row"
+            : props.col
+            ? props.reverse
+              ? "column-reverse"
+              : "column"
+            : undefined,
+          gap: props.gap,
+          backgroundColor: props.color,
+          position: props.absolute ? "absolute" : "relative",
+          left: props.absolute ? props.l : undefined,
+          marginLeft: !props.absolute ? props.l : undefined,
+          top: props.absolute ? props.t : undefined,
+          marginTop: !props.absolute ? props.t : undefined,
+          right: props.absolute ? props.r : undefined,
+          marginRight: !props.absolute ? props.r : undefined,
+          bottom: props.absolute ? props.b : undefined,
+          marginBottom: !props.absolute ? props.b : undefined,
+          justifyContent: props.justify,
+          justifyItems: props.justifyItems,
+          justifySelf: props.justifySelf,
+          alignContent: props.content,
+          alignSelf: props.self,
+          alignItems: props.items,
+          borderRadius:
+            typeof props.rounded === "boolean"
+              ? props.rounded
+                ? 9999
+                : undefined
+              : props.rounded,
+        },
+      };
+      if (props.className) {
+        Object.assign(elementProps, { className: props.className });
+      }
+      return createElement(type, elementProps);
+    },
+    { defaultProps }
+  );
 };
