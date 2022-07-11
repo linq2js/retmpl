@@ -30,6 +30,7 @@ yarn add retmpl
 2. Support react-content-loader templates
 3. Lightweight: ~1.5KB
 4. Support responsive UI
+5. Fully Typescript supported
 
 ## Usages
 

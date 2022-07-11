@@ -2,12 +2,20 @@ import {
   createElement,
   FC,
   Fragment,
+  memo,
   PropsWithChildren,
   ReactElement,
   useCallback,
   useMemo,
   useState,
 } from "react";
+
+export type Options = {
+  rowType?: any;
+  colType?: any;
+  rowProps?: ShapeProps;
+  colProps?: ShapeProps;
+};
 
 export type ComponentProps<T, P> = Omit<P, "children"> & {
   children?: Template<T>;
@@ -38,6 +46,13 @@ export type TemplateBuilder<T> = {
   (template: Template<T>): ReactElement;
 };
 
+const isComponent = (value: any) =>
+  typeof value === "function" ||
+  (value &&
+    typeof value === "object" &&
+    value.$$typeof &&
+    typeof value.type === "function");
+
 const createComponentsFromTemplate = (
   wrapper: any,
   props: any,
@@ -50,7 +65,7 @@ const createComponentsFromTemplate = (
     const itemWrapper = definitions[key + "Wrapper"];
 
     // custom component
-    if (typeof definition === "function") {
+    if (isComponent(definition)) {
       // number of components
       if (typeof value === "number") {
         const node = createElement(definition);
@@ -150,6 +165,19 @@ const AsyncTemplate = (props: { deps: any[]; render: Function }) => {
   return props.render(data.loaded, onLoad);
 };
 
+const normalizeDefinitions = <T>(definitions: T) => {
+  const normalizedDefinitions: Record<string, any> = {};
+  Object.keys(definitions).forEach((key) => {
+    const value = (definitions as any)[key];
+    if (typeof value === "function") {
+      normalizedDefinitions[key] = memo(value);
+    } else {
+      normalizedDefinitions[key] = value;
+    }
+  });
+  return normalizedDefinitions as T;
+};
+
 /**
  * create a template builder from specified template definitions. A template definitions is following below structure:
  * ```js
@@ -162,9 +190,22 @@ const AsyncTemplate = (props: { deps: any[]; render: Function }) => {
  * @returns
  */
 export const createTemplateBuilder = <T>(
-  definitions: T
-): TemplateBuilder<T> => {
-  const rootWrapper = (definitions as any).wrapper ?? Fragment;
+  definitions: T,
+  options?: Options
+): TemplateBuilder<{ row: FC<ShapeProps>; col: FC<ShapeProps> } & T> => {
+  const normalizedDefinitions = normalizeDefinitions({
+    row: createShapeTemplate(
+      { ...options?.rowProps, row: true },
+      options?.rowType
+    ),
+    col: createShapeTemplate(
+      { ...options?.colProps, col: true },
+      options?.colType
+    ),
+    ...definitions,
+  });
+  const rootWrapper = (normalizedDefinitions as any).wrapper ?? Fragment;
+
   return (...args: any[]) => {
     if (typeof args[0] === "function") {
       const [render, deps = []] = args;
@@ -173,7 +214,7 @@ export const createTemplateBuilder = <T>(
           return createComponentsFromTemplate(
             rootWrapper,
             {},
-            definitions,
+            normalizedDefinitions,
             render(loaded, onLoad)
           );
         },
@@ -187,7 +228,12 @@ export const createTemplateBuilder = <T>(
 
     const [template] = args;
 
-    return createComponentsFromTemplate(rootWrapper, {}, definitions, template);
+    return createComponentsFromTemplate(
+      rootWrapper,
+      {},
+      normalizedDefinitions,
+      template
+    );
   };
 };
 
@@ -259,6 +305,14 @@ export type ShapeProps = {
    * alignSelf
    */
   self?: "start" | "end" | "center" | "between" | "around" | "evenly";
+  /**
+   * flexWrap
+   */
+  wrap?: boolean | "nowrap" | "wrap" | "wrap-reverse";
+  aspectRatio?: number | string;
+  extraProps?:
+    | Record<string, any>
+    | ((props: ShapeProps) => Record<string, any>);
 };
 
 export const createShapeTemplate = (
@@ -267,13 +321,21 @@ export const createShapeTemplate = (
 ) => {
   return Object.assign(
     (props: PropsWithChildren<ShapeProps>) => {
+      const extraProps =
+        typeof props.extraProps === "function"
+          ? props.extraProps(props)
+          : props.extraProps;
+      const extraStyle = extraProps?.style;
       const elementProps = {
+        ...extraProps,
         children: props.children,
         style: {
+          ...extraStyle,
           flex: props.flex,
           display: props.flex || props.row || props.col ? "flex" : undefined,
           width: props.w,
           height: props.h,
+          aspectRatio: props.aspectRatio,
           flexDirection: props.row
             ? props.reverse
               ? "row-reverse"
@@ -284,6 +346,12 @@ export const createShapeTemplate = (
               : "column"
             : undefined,
           gap: props.gap,
+          flexWrap:
+            typeof props.wrap === "boolean"
+              ? props.wrap
+                ? "wrap"
+                : "nowrap"
+              : props.wrap,
           backgroundColor: props.color,
           position: props.absolute ? "absolute" : "relative",
           left: props.absolute ? props.l : undefined,
