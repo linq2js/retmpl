@@ -65,7 +65,11 @@ const createComponentsFromTemplate = (
           const itemCount = value[0];
           if (typeof value[1] === "function") {
             const propFactory = value[1];
-            propsList.push(...new Array(itemCount).fill(null).map(propFactory));
+            propsList.push(
+              ...new Array(itemCount)
+                .fill(null)
+                .map((_, index) => propFactory(index))
+            );
           } else {
             propsList.push(...new Array(itemCount).fill(value[1]));
           }
