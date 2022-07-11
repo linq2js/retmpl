@@ -6,6 +6,7 @@ const builder = createTemplateBuilder({
   container: (props: PropsWithChildren<{}>) => (
     <div data-testid="container">{props.children}</div>
   ),
+  item: (props: { id: string }) => <div data-testid={props.id} />,
   node: <div data-testid="node" />,
 });
 
@@ -26,4 +27,20 @@ test("container template", () => {
   );
   getByTestId("container");
   expect(getAllByTestId("node").length).toBe(2);
+});
+
+test("extra template", () => {
+  const { getAllByTestId } = render(
+    <>
+      {builder({
+        item: [2, { id: "heading" }, { item: [2, { id: "item" }] }],
+      })}
+    </>
+  );
+  const headings = getAllByTestId("heading");
+  const items = getAllByTestId("item");
+  expect(headings.length).toBe(2);
+  expect(items.length).toBe(4);
+  expect(items[0].previousSibling).toBe(headings[0]);
+  expect(items[2].previousSibling).toBe(headings[1]);
 });

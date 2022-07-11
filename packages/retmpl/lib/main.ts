@@ -11,6 +11,7 @@ import {
 
 export type ComponentProps<T, P> = Omit<P, "children"> & {
   children?: Template<T>;
+  $next?: Template<T>;
 };
 
 export type ValueOf<T, N extends keyof T> = T[N] extends FC<infer P>
@@ -18,7 +19,8 @@ export type ValueOf<T, N extends keyof T> = T[N] extends FC<infer P>
       | ComponentProps<T, P>
       | [
           number,
-          ComponentProps<T, P> | ((index: number) => ComponentProps<T, P>)
+          ComponentProps<T, P> | ((index: number) => ComponentProps<T, P>),
+          ...Template<T>[]
         ]
       | ComponentProps<T, P>[]
   : number;
@@ -63,18 +65,22 @@ const createComponentsFromTemplate = (
       else if (value) {
         const multipleProps = Array.isArray(value);
         const propsList: any[] = [];
+        const moreTemplates: any[] = [];
 
         if (multipleProps && typeof value[0] === "number") {
-          const itemCount = value[0];
-          if (typeof value[1] === "function") {
-            const propFactory = value[1];
+          const [itemCount, itemProps] = value;
+          if (value.length > 2) {
+            moreTemplates.push(...value.slice(2));
+          }
+
+          if (typeof itemProps === "function") {
             propsList.push(
               ...new Array(itemCount)
                 .fill(null)
-                .map((_, index) => propFactory(index))
+                .map((_, index) => itemProps(index))
             );
           } else {
-            propsList.push(...new Array(itemCount).fill(value[1]));
+            propsList.push(...new Array(itemCount).fill(itemProps));
           }
         } else if (multipleProps) {
           propsList.push(...value);
@@ -82,32 +88,51 @@ const createComponentsFromTemplate = (
           propsList.push(value);
         }
 
-        const childNodes = propsList.map((props) => {
+        const items: any[] = [];
+
+        propsList.forEach((props) => {
           const { children: childTemplate, ...childProps } = props as any;
           if (childTemplate) {
-            return createComponentsFromTemplate(
-              definition,
-              childProps,
-              definitions,
-              childTemplate
+            items.push(
+              createComponentsFromTemplate(
+                definition,
+                childProps,
+                definitions,
+                childTemplate
+              )
             );
+          } else {
+            items.push(createElement(definition, childProps));
           }
-
-          return createElement(definition, childProps);
+          moreTemplates.forEach((moreTemplate) => {
+            items.push(
+              createComponentsFromTemplate(
+                Fragment,
+                {},
+                definitions,
+                moreTemplate
+              )
+            );
+          });
         });
+
         if (multipleProps && itemWrapper) {
-          children.push(createElement(itemWrapper, {}, ...childNodes));
+          children.push(createElement(itemWrapper, {}, ...items));
         } else {
-          children.push(...childNodes);
+          children.push(...items);
         }
       }
-    } else if (value && typeof value === "number") {
-      if (itemWrapper) {
-        children.push(
-          createElement(itemWrapper, {}, ...new Array(value).fill(definition))
-        );
-      } else {
-        children.push(...new Array(value).fill(definition));
+    }
+    // react node
+    else {
+      if (value && typeof value === "number") {
+        if (itemWrapper) {
+          children.push(
+            createElement(itemWrapper, {}, ...new Array(value).fill(definition))
+          );
+        } else {
+          children.push(...new Array(value).fill(definition));
+        }
       }
     }
   });
