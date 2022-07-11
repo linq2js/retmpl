@@ -16,7 +16,10 @@ export type ComponentProps<T, P> = Omit<P, "children"> & {
 export type ValueOf<T, N extends keyof T> = T[N] extends FC<infer P>
   ?
       | ComponentProps<T, P>
-      | [number, ComponentProps<T, P> | (() => ComponentProps<T, P>)]
+      | [
+          number,
+          ComponentProps<T, P> | ((index: number) => ComponentProps<T, P>)
+        ]
       | ComponentProps<T, P>[]
   : number;
 
