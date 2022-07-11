@@ -50,8 +50,8 @@ const isComponent = (value: any) =>
   typeof value === "function" ||
   (value &&
     typeof value === "object" &&
-    value.$$typeof &&
-    typeof value.type === "function");
+    typeof value.type === "function" &&
+    !value.props);
 
 const createComponentsFromTemplate = (
   wrapper: any,

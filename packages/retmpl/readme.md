@@ -1,6 +1,7 @@
 - [`React Template (retmpl)`](#react-template-retmpl)
   - [Installation](#installation)
   - [Features](#features)
+  - [Live demo](#live-demo)
   - [Usages](#usages)
     - [Simple article loading indicator](#simple-article-loading-indicator)
     - [Using shape builder](#using-shape-builder)
@@ -31,6 +32,10 @@ yarn add retmpl
 3. Lightweight: ~1.5KB
 4. Support responsive UI
 5. Fully Typescript supported
+
+## Live demo
+
+https://codesandbox.io/s/retmpl-demo-xpyr2h
 
 ## Usages
 
