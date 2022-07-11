@@ -4,6 +4,7 @@
   - [Usages](#usages)
     - [Simple article loading indicator](#simple-article-loading-indicator)
     - [Using shape builder](#using-shape-builder)
+  - [API Reference](#api-reference)
 
 # `React Template (retmpl)`
 
@@ -33,6 +34,8 @@ yarn add retmpl
 ## Usages
 
 ### Simple article loading indicator
+
+[createTemplateBuilder](https://linq2js.github.io/retmpl/modules.html#createTemplateBuilder) function retrieves template definition and return a template builder
 
 ```js
 import { createTemplateBuilder } from "retmpl";
@@ -66,7 +69,7 @@ function App() {
 ### Using shape builder
 
 Retmpl provides shape builder for creating template faster.
-createShapeTemplate function retrieves defaultProps (optional) of the shape and shape type (optional, div by default).
+[createShapeTemplate](https://linq2js.github.io/retmpl/modules.html#createShapeTemplate) function retrieves [defaultShapeProps](https://linq2js.github.io/retmpl/modules.html#ShapeProps) (optional) of the shape and shape type (optional, div by default).
 You can use React Native's View component instead of div
 
 ```js
@@ -128,3 +131,7 @@ const ArticleLoading = () =>
     },
   });
 ```
+
+## API Reference
+
+https://linq2js.github.io/retmpl/

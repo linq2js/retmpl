@@ -121,10 +121,10 @@ const AsyncTemplate = (props: { deps: any[]; render: Function }) => {
 /**
  * create a template builder from specified template definitions. A template definitions is following below structure:
  * ```js
- * createTemplateBuilder({
- *  line: <div style={{ height: 10, backgroundColor: 'silver' }}/>,
- *  circle: <div style={{ height: 100, width: 100, borderRadius: 100 }}/>
- * })
+ * const templateDefinition = {
+ *  line: <div style={{ height: 10, backgroundColor: 'silver' }}/>, // react node
+ *  circle: (props) => <div style={{ height: props.radius, width: props.radius, borderRadius: 100 }}/> // a functional component
+ * }
  * ```
  * @param definitions
  * @returns
