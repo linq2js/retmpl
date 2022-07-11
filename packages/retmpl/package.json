@@ -1,0 +1,40 @@
+{
+  "name": "retmpl",
+  "version": "0.0.0",
+  "description": "A React library for creating components from specific template easily",
+  "author": "linq2js <linqtojs@gmail.com>",
+  "repository": {
+    "url": "https://github.com/linq2js/retmpl"
+  },
+  "homepage": "https://linq2js.github.io/retmpl/",
+  "license": "ISC",
+  "main": "dist/tsc/main.js",
+  "types": "dist/tsc/main.d.ts",
+  "directories": {
+    "lib": "lib",
+    "mutation": "mutation"
+  },
+  "files": [
+    "lib",
+    "dist/tsc"
+  ],
+  "keywords": [
+    "react",
+    "template",
+    "skeleton",
+    "loader",
+    "content",
+    "dynamic",
+    "render",
+    "stable"
+  ],
+  "peerDependenciesMeta": {},
+  "scripts": {
+    "prepublishOnly": "yarn test && yarn && yarn build",
+    "lint": "eslint lib/ --ext .js,.jsx,.ts,.tsx",
+    "test": "jest --passWithNoTests --runInBand",
+    "clean": "rm -rf dist build package",
+    "ts-node": "ts-node",
+    "build": "rimraf dist && tsc"
+  }
+}
