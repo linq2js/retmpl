@@ -1,6 +1,6 @@
 {
   "name": "retmpl",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A React library for creating components from specific template easily",
   "author": "linq2js <linqtojs@gmail.com>",
   "repository": {
