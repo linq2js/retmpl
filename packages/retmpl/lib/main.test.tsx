@@ -64,3 +64,16 @@ test("pre-defined col template", () => {
   const item = getByTestId("item");
   expect(item.parentNode).toBe(container);
 });
+
+test("wrapper", () => {
+  const { getByTestId } = render(
+    builder({
+      wrapper: { extraProps: { "data-testid": "root" } },
+      item: { id: "item" },
+    })
+  );
+
+  const root = getByTestId("root");
+  const item = getByTestId("item");
+  expect(item.parentNode).toBe(root);
+});

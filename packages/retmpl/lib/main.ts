@@ -11,8 +11,11 @@ import {
 } from "react";
 
 export type Options = {
+  containerType?: any;
+  wrapperType?: any;
   rowType?: any;
   colType?: any;
+  wrapperProps?: ShapeProps;
   rowProps?: ShapeProps;
   colProps?: ShapeProps;
 };
@@ -216,30 +219,39 @@ const normalizeDefinitions = <T>(definitions: T) => {
 export const createTemplateBuilder = <T>(
   definitions: T,
   options?: Options
-): TemplateBuilder<{ row: FC<ShapeProps>; col: FC<ShapeProps> } & T> => {
-  const normalizedDefinitions = normalizeDefinitions({
+): TemplateBuilder<
+  { wrapper: FC<ShapeProps>; row: FC<ShapeProps>; col: FC<ShapeProps> } & T
+> => {
+  let normalizedDefinitions = normalizeDefinitions({
+    wrapper: createShapeTemplate(
+      { ...options?.wrapperProps },
+      options?.wrapperType ?? options?.containerType
+    ),
     row: createShapeTemplate(
       { ...options?.rowProps, row: true },
-      options?.rowType
+      options?.rowType ?? options?.containerType
     ),
     col: createShapeTemplate(
       { ...options?.colProps, col: true },
-      options?.colType
+      options?.colType ?? options?.containerType
     ),
     ...definitions,
-  });
-  const rootWrapper = (normalizedDefinitions as any).wrapper ?? Fragment;
+  }) as any;
 
   return (...args: any[]) => {
     if (typeof args[0] === "function") {
       const [render, deps = []] = args;
       return createElement(AsyncTemplate, {
         render(loaded: boolean, onLoad: VoidFunction) {
+          let { wrapper, ...template } = render(loaded, onLoad);
+          if (wrapper) {
+            template = { wrapper: { ...wrapper, children: template } };
+          }
           return createComponentsFromTemplate(
-            rootWrapper,
+            Fragment,
             {},
             normalizedDefinitions,
-            render(loaded, onLoad)
+            template
           );
         },
         deps,
@@ -250,10 +262,14 @@ export const createTemplateBuilder = <T>(
       args[0] = { [args[0]]: args[1] };
     }
 
-    const [template] = args;
+    const [inputTemplate] = args;
+    let { wrapper, ...template } = inputTemplate;
+    if (wrapper) {
+      template = { wrapper: { ...wrapper, children: template } };
+    }
 
     return createComponentsFromTemplate(
-      rootWrapper,
+      Fragment,
       {},
       normalizedDefinitions,
       template
