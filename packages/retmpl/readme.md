@@ -2,6 +2,8 @@
   - [Installation](#installation)
   - [Features](#features)
   - [Live demo](#live-demo)
+    - [React JS](#react-js)
+    - [React Native](#react-native)
   - [Usages](#usages)
     - [Simple article loading indicator](#simple-article-loading-indicator)
     - [Using shape builder](#using-shape-builder)
@@ -29,13 +31,19 @@ yarn add retmpl
 
 1. Highly customizable (Web/Native)
 2. Support react-content-loader templates
-3. Lightweight: ~1.5KB
+3. Lightweight: ~2KB
 4. Support responsive UI
 5. Fully Typescript supported
 
 ## Live demo
 
+### React JS
+
 https://codesandbox.io/s/retmpl-demo-xpyr2h
+
+### React Native
+
+https://snack.expo.dev/@linq2js/retmpl-expo-demo
 
 ## Usages
 

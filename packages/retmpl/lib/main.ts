@@ -51,6 +51,21 @@ export type TemplateBuilder<T> = {
 
 export type ItemContext = { index: number; first: boolean; last: boolean };
 
+const convertLength = (value: any, fullValue?: any) => {
+  if (!value) return value;
+  if (typeof value === "string") {
+    if (value === "full") {
+      if (fullValue) return fullValue;
+      return value;
+    }
+    if (value.includes("/")) {
+      const parts = value.split("/").map((x) => x.trim());
+      return (parseFloat(parts[0]) / parseFloat(parts[1])) * 100 + "%";
+    }
+  }
+  return value;
+};
+
 const isComponent = (value: any) =>
   typeof value === "function" ||
   (value &&
@@ -246,33 +261,75 @@ export const createTemplateBuilder = <T>(
   };
 };
 
+export type Length = string | number;
+
 export type ShapeProps = {
   className?: string;
   /**
    * left
    */
-  l?: number | string;
+  l?: Length;
   /**
    * top
    */
-  t?: number | string;
+  t?: Length;
   /**
    * right
    */
-  r?: number | string;
+  r?: Length;
   /**
    * bottom
    */
-  b?: number | string;
+  b?: Length;
   /**
    * width
    */
-  w?: number | string;
+  w?: Length;
+  /**
+   * padding
+   */
+  p?: Length;
+  /**
+   * paddingLeft and paddingRight
+   */
+  px?: Length;
+  /**
+   * paddingTop and paddingBottom
+   */
+  py?: Length;
+  /**
+   * paddingLeft
+   */
+  pl?: Length;
+  /**
+   * paddingTop
+   */
+  pt?: Length;
+  /**
+   * paddingRight
+   */
+  pr?: Length;
+  /**
+   * paddingBottom
+   */
+  pb?: Length;
+  /**
+   * margin
+   */
+  m?: Length;
+  /**
+   * marginLeft and marginRight
+   */
+  mx?: Length;
+  /**
+   * marginTop and marginBottom
+   */
+  my?: Length;
   /**
    * height
    */
-  h?: number | string;
-  gap?: number | string;
+  h?: Length;
+  gap?: Length;
   /**
    * backgroundColor
    */
@@ -335,6 +392,15 @@ export const createShapeTemplate = (
           ? props.extraProps(props)
           : props.extraProps;
       const extraStyle = extraProps?.style;
+      const l = props.l ?? props.mx ?? props.m;
+      const r = props.r ?? props.mx ?? props.m;
+      const t = props.t ?? props.my ?? props.m;
+      const b = props.b ?? props.my ?? props.m;
+      const pl = props.pl ?? props.px ?? props.p;
+      const pr = props.pr ?? props.px ?? props.p;
+      const pt = props.pt ?? props.py ?? props.p;
+      const pb = props.pb ?? props.py ?? props.p;
+
       const elementProps = {
         ...extraProps,
         children: props.children,
@@ -342,8 +408,8 @@ export const createShapeTemplate = (
           ...extraStyle,
           flex: props.flex,
           display: props.flex || props.row || props.col ? "flex" : undefined,
-          width: props.w,
-          height: props.h,
+          width: convertLength(props.w),
+          height: convertLength(props.h),
           aspectRatio: props.aspectRatio,
           flexDirection: props.row
             ? props.reverse
@@ -363,14 +429,18 @@ export const createShapeTemplate = (
               : props.wrap,
           backgroundColor: props.color,
           position: props.absolute ? "absolute" : "relative",
-          left: props.absolute ? props.l : undefined,
-          marginLeft: !props.absolute ? props.l : undefined,
-          top: props.absolute ? props.t : undefined,
-          marginTop: !props.absolute ? props.t : undefined,
-          right: props.absolute ? props.r : undefined,
-          marginRight: !props.absolute ? props.r : undefined,
-          bottom: props.absolute ? props.b : undefined,
-          marginBottom: !props.absolute ? props.b : undefined,
+          left: convertLength(props.absolute ? l : undefined),
+          marginLeft: convertLength(!props.absolute ? l : undefined),
+          top: convertLength(props.absolute ? t : undefined),
+          marginTop: convertLength(!props.absolute ? t : undefined),
+          right: convertLength(props.absolute ? r : undefined),
+          marginRight: convertLength(!props.absolute ? r : undefined),
+          bottom: convertLength(props.absolute ? b : undefined),
+          marginBottom: convertLength(!props.absolute ? b : undefined),
+          paddingBottom: convertLength(pb),
+          paddingTop: convertLength(pt),
+          paddingLeft: convertLength(pl),
+          paddingRight: convertLength(pr),
           justifyContent: props.justify,
           justifyItems: props.justifyItems,
           justifySelf: props.justifySelf,
