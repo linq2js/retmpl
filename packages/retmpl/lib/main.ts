@@ -27,7 +27,10 @@ export type ValueOf<T, N extends keyof T> = T[N] extends FC<infer P>
       | ComponentProps<T, P>
       | [
           number,
-          ComponentProps<T, P> | ((index: number) => ComponentProps<T, P>),
+          (
+            | ComponentProps<T, P>
+            | ((context: ItemContext) => ComponentProps<T, P>)
+          ),
           ...Template<T>[]
         ]
       | ComponentProps<T, P>[]
@@ -45,6 +48,8 @@ export type TemplateBuilder<T> = {
   ): ReactElement;
   (template: Template<T>): ReactElement;
 };
+
+export type ItemContext = { index: number; first: boolean; last: boolean };
 
 const isComponent = (value: any) =>
   typeof value === "function" ||
@@ -90,9 +95,13 @@ const createComponentsFromTemplate = (
 
           if (typeof itemProps === "function") {
             propsList.push(
-              ...new Array(itemCount)
-                .fill(null)
-                .map((_, index) => itemProps(index))
+              ...new Array(itemCount).fill(null).map((_, index) =>
+                itemProps({
+                  index,
+                  first: index === 0,
+                  last: index === itemCount - 1,
+                })
+              )
             );
           } else {
             propsList.push(...new Array(itemCount).fill(itemProps));
